@@ -1,0 +1,76 @@
+@ViewChild('image') imageRef!: ElementRef<HTMLImageElement>;
+
+
+  constructor(
+    private service: AllpinsService,
+    private router :Router, 
+    private http: HttpClient, 
+    private utils: CommonUtilsService,
+    
+    ){
+      
+    }
+
+
+  placeholderSrc = 'assets/Taswira2030.png';
+
+
+
+  
+
+  observer!: IntersectionObserver;
+
+
+
+  handleIntersect(entries: IntersectionObserverEntry[]) {
+   
+    
+    const entry = entries[0]; // Assuming you only care about the first entry
+    if (entry.isIntersecting) {
+      const imageElement = entry.target as HTMLElement;
+
+      const matchingImage = this.pins_list.find((pin : any) => pin.image === imageElement.dataset['src'])
+      this.loadImage(matchingImage);    
+    }
+  }
+
+
+  loadImage(image: any){  
+    if (image) {
+      this.imageRef.nativeElement.src = image.slice(60)
+      this.observer.unobserve(this.imageRef.nativeElement);
+    }
+
+    console.log(image)
+  }
+
+  
+    reloadPage($event: boolean) {
+      this.service.RequestAllPosts()
+      this.checkConnection()
+    }
+
+    
+
+
+  allWebsitePosts(){
+    
+    this.service.all_posts_subject.subscribe((result)=>{
+      this.pins_list = result
+      
+      setTimeout(()=>{
+        this.loading = false
+      },200)
+                  
+    })
+
+
+  }
+  checkConnection(){
+    this.utils.getProfileUser()
+    this.service.error_subject.subscribe((e)=>{      
+      this.connection_failed = true
+      this.loading = false
+      
+    })
+  }
